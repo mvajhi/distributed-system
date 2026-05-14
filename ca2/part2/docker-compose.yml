@@ -1,0 +1,25 @@
+services:
+  auth-server:
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
+    volumes:
+      - ./auth/users.json:/root/users.json
+    # ports:
+    #   - "50051:50051"
+
+  web-server:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "8080:8080"
+
+  file-server:
+    build:
+      context: .
+      dockerfile: file/Dockerfile
+    volumes:
+      - ./file/files:/root/files
+    # ports:
+    #   - "50052:50052"

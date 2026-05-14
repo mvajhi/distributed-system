@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Service</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        .image-container { margin-top: 20px; border: 1px solid #ccc; padding: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <h2>System Login & File Request</h2>
+
+    {{if .Error}}
+        <p class="error">{{.Error}}</p>
+    {{end}}
+
+    {{if .ImageBase64}}
+        <p class="success">Login Successful!</p>
+        <p>File retrieved securely from file server via gRPC:</p>
+        <div class="image-container">
+            <img src="data:{{.ContentType}};base64,{{.ImageBase64}}" alt="Secure File" style="max-width: 600px;">
+        </div>
+        <br><br>
+        <a href="/">Logout (Back to Login)</a>
+    {{else}}
+        <form action="/login" method="POST">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+
+            <label for="filename">Target File Name (e.g., 1.jpg):</label><br>
+            <input type="text" id="filename" name="filename" required><br><br>
+            
+            <input type="submit" value="Login & Get File">
+        </form>
+    {{end}}
+
+</body>
+</html>
