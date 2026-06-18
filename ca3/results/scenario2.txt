@@ -1,0 +1,11 @@
+Running Scenario 2: Replica Failure (Eventual Mode)...
+1. Stopping Replica 3 (PID: 11690)...
+
+2. Writing y=200 to Replica 1 (Eventual)
+Write successful on replica1 (Eventual)
+
+
+3. Waiting 2 seconds for replication...
+
+4. GET from Replica 2 (Should have the data despite Replica 3 being down):
+{"key":"y","value":"200","version":1,"updated_by":"replica1"}

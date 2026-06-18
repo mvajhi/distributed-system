@@ -1,0 +1,13 @@
+Running Scenario 1: Temporary Inconsistency...
+1. Writing x=100 to Replica 1 (Eventual)
+Write successful on replica1 (Eventual)
+
+
+2. Immediate GET from Replica 2 (Should fail as Key not found):
+Key not found
+
+
+3. Waiting 2 seconds for eventual sync...
+
+4. GET from Replica 2 after delay (Should have the data):
+{"key":"x","value":"100","version":1,"updated_by":"replica1"}
