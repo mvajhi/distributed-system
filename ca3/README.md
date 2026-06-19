@@ -161,3 +161,166 @@ type Item struct {
 - **Convergence Time:** مدت زمان لازم برای رسیدن مقدار جدید به آخرین رپلیکای فعال شبکه.
 - **Stale Reads:** تعداد دفعاتی که داده قدیمی در طول شبیه‌سازی خوانده شد (در سناریوی ۱ به دلیل خواندن فوری در پنجره ناسازگاری مقدار آن ۱ است).
 - **Updates Count:** تعداد گره‌های به‌روزرسانی شده موفق پس از هر عملیات.
+
+---
+
+## ۶. بخش ششم: تحلیل فنی و مستندات کدها همراه با جزئیات پیاده‌سازی
+
+در این بخش، ساختارهای داده کلیدی، توابع اصلی و منطق اجرایی کدهای پروژه همراه با قطعه‌کدهای مربوطه توضیح داده شده‌اند.
+
+### الف) فایل `replica/store.go` (هسته ذخیره‌سازی داده درون‌حافظه‌ای)
+این فایل مسئول پیاده‌سازی مخزن داده‌های درون‌حافظه‌ای (In-Memory Key-Value) به صورت ایمن در برابر دسترسی‌های همزمان چند ریسمانی است.
+
+* **ساختار داده `Item`:** 
+  هر آیتم ذخیره شده علاوه بر مقدار اصلی، دارای نسخه کلید جهت تشخیص داده‌های تازه‌تر و نام رپلیکای ویرایش‌کننده است:
+  ```go
+  type Item struct {
+      Value     string `json:"value"`
+      Version   int    `json:"version"`
+      UpdatedBy string `json:"updated_by"`
+  }
+  ```
+  فیلد `Version` برای ارزیابی تازگی داده و رشته `UpdatedBy` در حل تعارض‌های هم‌نسخه کاربرد دارد.
+
+* **ساختار `Store`:** 
+  برای جلوگیری از بروز مسابقه داده (Data Race)، مخزن داده محلی مجهز به قفل خواندن/نوشتن همروندی است:
+  ```go
+  type Store struct {
+      mu sync.RWMutex
+      db map[string]Item
+  }
+  ```
+
+* **متد `Get`:** 
+  برای خواندن ایمن داده‌ها از قفل اشتراکی خواندن (`RLock`) استفاده شده است تا چندین خواندن به طور موازی بدون مسدودسازی انجام شوند:
+  ```go
+  func (s *Store) Get(key string) (Item, bool) {
+      s.mu.RLock()
+      defer s.mu.RUnlock()
+      item, exists := s.db[key]
+      return item, exists
+  }
+  ```
+
+* **متد `Put` (الگوریتم حل تعارض LWW):** 
+  هنگام دریافت داده‌های تکثیر شده از سایر رپلیکاها، این تابع با بررسی نسخه و نام رپلیکا تصمیم به پذیرش یا رد تغییر می‌گیرد:
+  ```go
+  func (s *Store) Put(key string, incoming Item) (bool, Item) {
+      s.mu.Lock()
+      defer s.mu.Unlock()
+
+      current, exists := s.db[key]
+      if !exists {
+          s.db[key] = incoming
+          return true, incoming
+      }
+
+      // ۱. قانون اول: ورژن بالاتر برنده است
+      if incoming.Version > current.Version {
+          s.db[key] = incoming
+          return true, incoming
+      } else if incoming.Version < current.Version {
+          return false, current
+      }
+
+      // ۲. قانون دوم: در ورژن برابر، رپلیکا با شناسه الفبایی بزرگتر برنده است (LWW)
+      if incoming.UpdatedBy > current.UpdatedBy {
+          s.db[key] = incoming
+          return true, incoming
+      }
+
+      return false, current
+  }
+  ```
+
+* **متد `IncrementAndPut`:** 
+  توسط رپلیکای هماهنگ‌کننده کلاینت فراخوانی می‌شود تا نسخه داده موجود را اتمیک یک واحد افزایش داده و مقدار جدید را با برچسب شناسه خود به عنوان آخرین ویرایشگر ثبت کند:
+  ```go
+  func (s *Store) IncrementAndPut(key string, value string, updatedBy string) Item {
+      s.mu.Lock()
+      defer s.mu.Unlock()
+
+      current, exists := s.db[key]
+      newVersion := 1
+      if exists {
+          newVersion = current.Version + 1
+      }
+
+      newItem := Item{
+          Value:     value,
+          Version:   newVersion,
+          UpdatedBy: updatedBy,
+      }
+      s.db[key] = newItem
+      return newItem
+  }
+  ```
+
+---
+
+### ب) فایل `replica/main.go` (وب‌سرور و ارتباط توزیع‌شده)
+این فایل فرآیند سرور HTTP، پیکربندی‌ها و پروتکل ارتباطی رپلیکاها با یکدیگر را مدیریت می‌کند.
+
+* **اندپوینت کلاینت `PUT /kv/{key}`:** 
+  هسته منطق هماهنگ‌کننده برای مدیریت نوشتن بر اساس نوع سازگاری:
+  - ابتدا داده به صورت محلی با افزایش ورژن ذخیره می‌شود.
+  - **در حالت Strong Consistency:** پیام‌های رپلی‌کیشن موازی به همتاها صادر شده و نتایج موفقیت به یک کانال موفقیت ارسال می‌شود. هماهنگ‌کننده منتظر پاسخ می‌ماند تا زمانی که تعداد گره‌های موفق به حد نصاب اکثریت برسد:
+    ```go
+    totalReplicas := len(peers) + 1
+    quorum := totalReplicas/2 + 1
+    neededPeers := quorum - 1
+    // ...
+    if quorumReached {
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(item)
+    } else {
+        http.Error(w, "Quorum not reached", http.StatusServiceUnavailable)
+    }
+    ```
+  - **در حالت Eventual Consistency:** رپلی‌کیشن به همتاها در گوروتین‌های پس‌زمینه بدون مسدودسازی کلاینت صادر شده و سرور بلافاصله پاسخ ۲۰۰ OK می‌دهد:
+    ```go
+    for peerID, peerURL := range peers {
+        go func(id, url string) {
+            replicateToPeer(key, item, url, id)
+        }(peerID, peerURL)
+    }
+    ```
+
+* **اندپوینت رپلی‌کیشن `POST /replicate/{key}`:** 
+  اندپوینتی که توسط سایر رپلیکاها فراخوانی می‌شود و با فراخوانی `kvStore.Put(key, incoming)` در صورت به‌روزرسانی موفق وضعیت ۲۰۰ و در غیر این صورت وضعیت ۴۰۹ تعارض برمی‌گرداند.
+
+* **تابع ارسال فیزیکی داده `replicateToPeer`:** 
+  برای ارتباط بین گره‌ها و ارسال درخواست رپلی‌کیشن به همتاها استفاده می‌شود. در صورتی که تاخیر شبکه شبیه‌سازی شده (`delay`) مقدار مثبت داشته باشد، قبل از ارسال درخواست، اجرای کد به اندازه تاخیر تعلیق می‌شود:
+  ```go
+  if delay > 0 {
+      time.Sleep(time.Duration(delay) * time.Millisecond)
+  }
+  // ارسال درخواست POST به همتا
+  ```
+
+---
+
+### ج) فایل `client/main.go` (برنامه شبیه‌ساز سناریوها)
+این برنامه در نقش کلاینت، درخواست‌های سناریوهای مختلف را به رپلیکاها فرستاده و نتایج را ارزیابی می‌کند.
+
+* **توابع کمکی لاگ‌های رنگی ترمینال:**
+  تعریف توابع `printStep` ،`printSuccess` ،`printFailure` و `printDetail` جهت رنگی کردن مراحل شبیه‌سازی در کنسول خروجی با بهره‌گیری از کدهای رنگی ANSI.
+
+* **تابع سناریوی اول `runScenario1`:**
+  نوشتن کلید `x=10` روی رپلیکای ۱، تلاش برای خواندن فوری از رپلیکای ۲، ثبت خطای ۴۰۴ به عنوان داده قدیمی (Stale Read)، انتظار ۳.۵ ثانیه‌ای و خواندن مجدد جهت تایید همگرایی نهایی داده:
+  ```go
+  resp, err := writeKey(r1URL, key, val) // نوشتن x=10 روی R1
+  // ...
+  itemImmediate, codeImmediate, err := readKey(r2URL, key) // خواندن فوری از R2 که منجر به 404 یا خطا می‌شود
+  // ...
+  time.Sleep(3500 * time.Millisecond)
+  itemLater, codeLater, err := readKey(r2URL, key) // خواندن دوباره که موفق است
+  ```
+
+* **تابع سناریوی دوم `runScenario2`:**
+  بررسی رفتار سیستم در زمان قطعی رپلیکاها و تایید شکست در مدل Strong در صورت قطع دو رپلیکا (عدم دسترسی به حد نصاب).
+
+* **تابع سناریوی سوم `runScenario3`:**
+  ارسال همزمان دو درخواست نوشتن با مقادیر متفاوت برای کلید `conflict-key` به گره‌های رپلیکای ۱ و رپلیکای ۲ با استفاده از گوروتین‌ها و ساختار `sync.WaitGroup` جهت نمایش و تایید عملکرد سیاست حل تعارض LWW.
+
+
