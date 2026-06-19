@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package kvstore;
+
+option go_package = "github.com/mvajhi/dist/ca3/proto/pb";
+
+// ConsistencyModel specifies which consistency model to use for an operation.
+enum ConsistencyModel {
+  EVENTUAL = 0;
+  STRONG = 1;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Client-facing messages
+// ────────────────────────────────────────────────────────────────────────────
+
+message PutRequest {
+  string key = 1;
+  string value = 2;
+  ConsistencyModel consistency = 3;
+}
+
+message PutResponse {
+  bool success = 1;
+  int64 version = 2;
+  string error = 3;
+}
+
+message GetRequest {
+  string key = 1;
+  ConsistencyModel consistency = 2;
+}
+
+message GetResponse {
+  bool found = 1;
+  string key = 2;
+  string value = 3;
+  int64 version = 4;
+  string updated_by = 5;
+  string error = 6;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Inter-replica replication messages
+// ────────────────────────────────────────────────────────────────────────────
+
+message ReplicateRequest {
+  string key = 1;
+  string value = 2;
+  int64 version = 3;
+  string updated_by = 4;
+  int64 timestamp = 5; // UnixNano
+}
+
+message ReplicateResponse {
+  bool accepted = 1;
+  int64 current_version = 2;
+  string reason = 3;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Health check
+// ────────────────────────────────────────────────────────────────────────────
+
+message Empty {}
+
+message HealthResponse {
+  bool alive = 1;
+  string replica_id = 2;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Shutdown (for testing scenarios — graceful stop)
+// ────────────────────────────────────────────────────────────────────────────
+
+message ShutdownRequest {
+  string reason = 1;
+}
+
+message ShutdownResponse {
+  bool acknowledged = 1;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Network delay injection (for testing scenarios)
+// ────────────────────────────────────────────────────────────────────────────
+
+message SetDelayRequest {
+  int64 delay_ms = 1;
+}
+
+message SetDelayResponse {
+  bool success = 1;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Service definition
+// ────────────────────────────────────────────────────────────────────────────
+
+service KVStore {
+  // Client-facing operations
+  rpc Put(PutRequest) returns (PutResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+
+  // Inter-replica replication
+  rpc Replicate(ReplicateRequest) returns (ReplicateResponse);
+
+  // Health check
+  rpc HealthCheck(Empty) returns (HealthResponse);
+
+  // Testing helpers
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+  rpc SetDelay(SetDelayRequest) returns (SetDelayResponse);
+}

@@ -1,0 +1,10 @@
+{
+  "scenario": "3 (Concurrent Conflict)",
+  "consistency_model": "Eventual",
+  "put_latency_ms": 0.4995,
+  "get_latency_ms": 0,
+  "convergence_time_ms": 0.788,
+  "stale_reads_count": 0,
+  "success": true,
+  "notes": "winner=value_A"
+}
