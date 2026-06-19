@@ -156,7 +156,7 @@ func runScenario1() {
 	}
 
 	key := "x"
-	val := "100"
+	val := "10"
 
 	printStep("STEP 1", fmt.Sprintf("Writing key '%s' = '%s' to coordinator Replica 1 (R1)...", key, val))
 	resp, err := writeKey(r1URL, key, val)

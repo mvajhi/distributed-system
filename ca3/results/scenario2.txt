@@ -8,8 +8,8 @@ Scenario 2: Replica Failure Handling
 [1mRunning Scenario 2: Replica Failure Handling[0m
 [35m==================================================[0m
 [1m[34m[STEP 1][0m Checking active replica consistency mode: eventual
-[1m[34m[STEP 2][0m Attempting PUT key 's2-1781866602' = 'val-s2' to coordinator R1...
-[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 1.791041ms)[0m
+[1m[34m[STEP 2][0m Attempting PUT key 's2-1781867878' = 'val-s2' to coordinator R1...
+[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 880.25µs)[0m
   [36mResponse Body:[0m {"value":"val-s2","version":1,"updated_by":"replica1"}
 
 [1m[34m[STEP 3][0m Consistency Model Comparison:
@@ -22,8 +22,8 @@ Scenario 2: Replica Failure Handling
 [1mRunning Scenario 2: Replica Failure Handling[0m
 [35m==================================================[0m
 [1m[34m[STEP 1][0m Checking active replica consistency mode: strong
-[1m[34m[STEP 2][0m Attempting PUT key 's2-1781866604' = 'val-s2' to coordinator R1...
-[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 3.33629ms)[0m
+[1m[34m[STEP 2][0m Attempting PUT key 's2-1781867880' = 'val-s2' to coordinator R1...
+[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 3.720821ms)[0m
   [36mResponse Body:[0m {"value":"val-s2","version":1,"updated_by":"replica1"}
 
 [1m[34m[STEP 3][0m Consistency Model Comparison:
@@ -37,8 +37,8 @@ Scenario 2: Replica Failure Handling
 [1mRunning Scenario 2: Replica Failure Handling[0m
 [35m==================================================[0m
 [1m[34m[STEP 1][0m Checking active replica consistency mode: eventual
-[1m[34m[STEP 2][0m Attempting PUT key 's2-1781866605' = 'val-s2' to coordinator R1...
-[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 679.89µs)[0m
+[1m[34m[STEP 2][0m Attempting PUT key 's2-1781867881' = 'val-s2' to coordinator R1...
+[1m[32m[SUCCESS] PUT succeeded. Status: 200 OK (Duration: 830.151µs)[0m
   [36mResponse Body:[0m {"value":"val-s2","version":1,"updated_by":"replica1"}
 
 [1m[34m[STEP 3][0m Consistency Model Comparison:
@@ -51,8 +51,8 @@ Scenario 2: Replica Failure Handling
 [1mRunning Scenario 2: Replica Failure Handling[0m
 [35m==================================================[0m
 [1m[34m[STEP 1][0m Checking active replica consistency mode: strong
-[1m[34m[STEP 2][0m Attempting PUT key 's2-1781866607' = 'val-s2' to coordinator R1...
-[1m[31m[FAILURE] PUT failed with status: 503 (Duration: 2.057664ms)[0m
+[1m[34m[STEP 2][0m Attempting PUT key 's2-1781867883' = 'val-s2' to coordinator R1...
+[1m[31m[FAILURE] PUT failed with status: 503 (Duration: 2.664486ms)[0m
   [36mResponse Body:[0m Quorum not reached
 
 [1m[34m[STEP 3][0m Consistency Model Comparison:

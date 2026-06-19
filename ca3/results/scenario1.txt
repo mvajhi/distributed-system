@@ -2,7 +2,7 @@
 [35m==================================================[0m
 [1mRunning Scenario 1: Observe Temporary Inconsistency[0m
 [35m==================================================[0m
-[1m[34m[STEP 1][0m Writing key 'x' = '100' to coordinator Replica 1 (R1)...
+[1m[34m[STEP 1][0m Writing key 'x' = '10' to coordinator Replica 1 (R1)...
 [1m[32m[SUCCESS] Write operation confirmed by R1.[0m
 [1m[34m[STEP 2][0m Immediately reading key 'x' from Replica 2 (R2)...
 [1m[34m[STEP 3][0m Recording immediate read outcome:
@@ -10,6 +10,6 @@
 [1m[34m[STEP 4][0m Waiting 3.5 seconds for eventual replication propagation...
 [1m[34m[STEP 5][0m Reading key 'x' from Replica 2 (R2) again...
 [1m[32m[SUCCESS] Later read succeeded (Consistent state reached).[0m
-  [36mValue read from R2:[0m 100
+  [36mValue read from R2:[0m 10
   [36mVersion:[0m 1
   [36mUpdated By:[0m replica1
