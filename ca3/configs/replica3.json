@@ -1,8 +1,0 @@
-{
-  "replica_id": "replica-3",
-  "port": 8003,
-  "peers": ["localhost:8001", "localhost:8002"],
-  "default_consistency": "eventual",
-  "network_delay_ms": 0,
-  "log_level": "info"
-}

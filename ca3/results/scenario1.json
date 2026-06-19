@@ -1,9 +1,0 @@
-{
-  "scenario": "1 (Temp Inconsistency)",
-  "consistency_model": "Eventual",
-  "put_latency_ms": 0.968,
-  "get_latency_ms": 0.633,
-  "convergence_time_ms": 12.013,
-  "stale_reads_count": 3,
-  "success": true
-}

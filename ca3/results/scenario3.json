@@ -1,9 +1,0 @@
-{
-  "scenario": "4 (Network Delay 500ms)",
-  "consistency_model": "Eventual",
-  "put_latency_ms": 0.465,
-  "get_latency_ms": 0.6564375,
-  "convergence_time_ms": 510.88,
-  "stale_reads_count": 46,
-  "success": true
-}
