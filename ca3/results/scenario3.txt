@@ -1,0 +1,18 @@
+
+[35m==================================================[0m
+[1mRunning Scenario 3: Concurrent Conflict Resolution[0m
+[35m==================================================[0m
+[1m[34m[STEP 1][0m Sending concurrent writes to R1 ('val_r1') and R2 ('val_r2') for key 'conflict-key'...
+[1m[36m[INFO] Write to Replica 2 returned status: 200 OK[0m
+[1m[36m[INFO] Write to Replica 1 returned status: 200 OK[0m
+[1m[34m[STEP 2][0m Waiting 4.5 seconds for concurrent replication propagation and LWW resolution...
+[1m[34m[STEP 3][0m Verifying final state and read values from all replicas:
+  [36mreplica3 value:[0m 'val_r2' (Version: 1, UpdatedBy: replica2)
+  [36mreplica1 value:[0m 'val_r2' (Version: 1, UpdatedBy: replica2)
+  [36mreplica2 value:[0m 'val_r2' (Version: 1, UpdatedBy: replica2)
+[1m[34m[STEP 4][0m Conflict Resolution Policy Explanation:
+[1m[36m[INFO] The key-value store implements Last-Write-Wins (LWW) with version checks.[0m
+[1m[36m[INFO] When concurrent writes occur (both starting at Version 1), they have equal versions.[0m
+[1m[36m[INFO] To resolve equal-version conflicts deterministically, we compare replica IDs alphabetically.[0m
+[1m[36m[INFO] Since 'replica2' > 'replica1' alphabetically, the value written to replica2 ('val_r2') wins.[0m
+[1m[36m[INFO] As a result, all replicas converge to 'val_r2' once replication messages are fully exchanged.[0m

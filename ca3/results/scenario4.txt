@@ -1,0 +1,26 @@
+# Scenario 4 Network Delay Impact Matrix
+
+| Mode       | Delay   | PUT Latency     | GET Latency     | Convergence Time  |
+|------------|---------|-----------------|-----------------|------------------|
+| eventual   | 0ms     | 1.00ms          | 1.00ms          | 5.00ms            |
+| eventual   | 500ms   | 0.00ms          | 1.00ms          | 517.00ms          |
+| eventual   | 2000ms  | 0.00ms          | 0.00ms          | 2011.00ms         |
+| strong     | 0ms     | 3.00ms          | 1.00ms          | 7.00ms            |
+| strong     | 500ms   | 504.00ms        | 1.00ms          | 509.00ms          |
+| strong     | 2000ms  | 2005.00ms       | 1.00ms          | 2009.00ms         |
+
+---
+
+## Scenario 4: Network Delay Analysis
+
+1. How long does it take for all replicas to converge?
+   - Convergence time scales linearly with artificial network delay for both eventual and strong modes.
+   - At 0ms delay, convergence happens in < 15ms. At 500ms delay, it takes ~500ms. At 2000ms delay, it takes ~2000ms.
+
+2. Does the client see a stale/old value during this interval?
+   - Eventual Consistency: Yes. If a client writes to Replica 1 and immediately reads from Replica 2 or 3, it will see stale/empty data until replication completes.
+   - Strong Consistency: No. Since client writes block until a quorum of replicas confirms the write, subsequent reads from the quorum see the updated value.
+
+3. What is the difference between eventual and strong consistency in this case?
+   - Eventual Consistency: Write latency is immediate (0ms) and independent of network delay. However, the client is exposed to stale data during the convergence window.
+   - Strong Consistency: Write latency is directly bound by network delay (e.g. ~500ms for 500ms delay, ~2000ms for 2000ms delay) because it blocks waiting for quorum. However, stale reads are avoided.

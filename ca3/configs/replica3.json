@@ -1,0 +1,11 @@
+{
+  "id": "replica3",
+  "port": 8003,
+  "mode": "strong",
+  "delay": 0,
+  "replicas": {
+    "replica1": "http://localhost:8001",
+    "replica2": "http://localhost:8002",
+    "replica3": "http://localhost:8003"
+  }
+}

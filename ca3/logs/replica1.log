@@ -1,0 +1,10 @@
+[2026-06-19 14:27:06.578] [replica1] START key= version=0 Listening on port 8001, mode=strong, delay=2000ms
+[2026-06-19 14:27:08.085] [replica1] PUT_CLIENT key=s4-1781866628 version=0 received value=val-s4
+[2026-06-19 14:27:08.085] [replica1] PUT_LOCAL key=s4-1781866628 version=1 updated val=val-s4
+[2026-06-19 14:27:10.087] [replica1] REPLICATE_SEND key=s4-1781866628 version=1 to=replica2 url=http://localhost:8002/replicate/s4-1781866628
+[2026-06-19 14:27:10.087] [replica1] REPLICATE_SEND key=s4-1781866628 version=1 to=replica3 url=http://localhost:8003/replicate/s4-1781866628
+[2026-06-19 14:27:10.089] [replica1] REPLICATE_SEND key=s4-1781866628 version=1 to=replica3 success status=200
+[2026-06-19 14:27:10.090] [replica1] REPLICATE_SEND key=s4-1781866628 version=1 to=replica2 success status=200
+[2026-06-19 14:27:10.090] [replica1] PUT_CLIENT key=s4-1781866628 version=1 success strong_quorum_reached successes=2
+[2026-06-19 14:27:10.091] [replica1] GET_CLIENT key=s4-1781866628 version=1 status=200_ok val=val-s4 updated_by=replica1
+[2026-06-19 14:27:10.092] [replica1] GET_CLIENT key=s4-1781866628 version=1 status=200_ok val=val-s4 updated_by=replica1

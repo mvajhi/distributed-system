@@ -1,0 +1,8 @@
+[
+  {"mode": "eventual", "delay_ms": 0, "put_latency_ms": 1.00, "get_latency_ms": 1.00, "convergence_time_ms": 5.00},
+  {"mode": "eventual", "delay_ms": 500, "put_latency_ms": 0.00, "get_latency_ms": 1.00, "convergence_time_ms": 517.00},
+  {"mode": "eventual", "delay_ms": 2000, "put_latency_ms": 0.00, "get_latency_ms": 0.00, "convergence_time_ms": 2011.00},
+  {"mode": "strong", "delay_ms": 0, "put_latency_ms": 3.00, "get_latency_ms": 1.00, "convergence_time_ms": 7.00},
+  {"mode": "strong", "delay_ms": 500, "put_latency_ms": 504.00, "get_latency_ms": 1.00, "convergence_time_ms": 509.00},
+  {"mode": "strong", "delay_ms": 2000, "put_latency_ms": 2005.00, "get_latency_ms": 1.00, "convergence_time_ms": 2009.00}
+]
