@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package file;
+
+option go_package = "grpc/filepb";
+
+message FileRequest {
+    string filename = 1;
+}
+
+message FileResponse {
+    bytes data = 1;
+    string content_type = 2;
+}
+
+service FileService {
+    rpc DownloadFile (FileRequest) returns (FileResponse);
+}

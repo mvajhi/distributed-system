@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  auth-server:
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
+    volumes:
+      - ./auth/users.json:/root/users.json
+
+  web-server:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
+  file-server:
+    build:
+      context: .
+      dockerfile: file/Dockerfile
+    volumes:
+      - ./file/files:/root/files
+
+  subscriber:
+    build:
+      context: .
+      dockerfile: subscriber/Dockerfile
+    depends_on:
+      - redis
